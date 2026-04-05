@@ -11,8 +11,8 @@ permissions:
   checks: write
 
 jobs:
-  code-quality:
-    name: Code Quality Review
+  eslint:
+    name: eslint
     runs-on: ubuntu-latest
     env:
       TURBO_CACHE_DIR: .turbo-cache
@@ -40,7 +40,6 @@ jobs:
           node-version: 22
           cache: npm
 
-      # Install Reviewdog CLI
       - uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
@@ -48,25 +47,49 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Static Analysis: Run ESLint using Reviewdog for automated PR reviews
       - name: Run ESLint
         if: always()
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm run lint -- --log-prefix=none | reviewdog -f=eslint \
-            -reporter=github-pr-check \
+            -reporter=github-pr-review \
             -filter-mode=added \
             -fail-level=error
+  tsc:
+    name: tsc
+    runs-on: ubuntu-latest
+    env:
+      TURBO_CACHE_DIR: .turbo-cache
+      TURBO_TELEMETRY_DISABLED: 1
+      TURBO_RUN_SUMMARY: true
+      TURBO_UI: "stream"
 
-      # Type Checking: Perform TypeScript compilation checks and report errors
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Cache Turborepo
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.TURBO_CACHE_DIR }}
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Run Turborepo Reviewer
         uses: built-for-dx/turbo-tsc-reviewer@main
         if: always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      # Execution Report: Generate a summary of the Turborepo run and results
-      - name: Turborepo Summary
-        uses: charpeni/turborepo-summary-action@v1
-        if: always()
