@@ -1,12 +1,16 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, AbstractView } from "react";
 
 interface ButtonProps {
   children: ReactNode;
   className?: string;
   appName: string;
 }
+
+const typeCheck: number = "string";
+
+console.log(typeCheck);
 
 export const Button = ({ children, className, appName }: ButtonProps) => {
   return (
