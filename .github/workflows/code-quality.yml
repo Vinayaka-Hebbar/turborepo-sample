@@ -63,7 +63,7 @@ jobs:
       # Type Checking: Perform TypeScript compilation checks and report errors
       - name: Run Typecheck
         id: tsc
-        uses: built-for-dx/turbo-tsc-reviewer@main
+        uses: built-for-dx/turbo-tsc-reviewer@v1
         if: always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -72,9 +72,9 @@ jobs:
       # Review Summary: Consolidate lint and type check status and comment on failure
       - name: Review Summary
         if: always()
-        uses: built-for-dx/quality-summary@main
+        uses: built-for-dx/quality-summary@v1
         with:
-          steps: "eslint, tsc"
+          checks: "eslint, tsc"
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       # Execution Report: Generate a summary of the Turborepo run and results
